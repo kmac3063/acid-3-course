@@ -180,10 +180,12 @@ public:
         explicit value_node(node *node_) : current_node(node_) {}
 
         value_t get() {
+            std::shared_lock lock(mutex_);
             return current_node->get_value();
         }
 
         void set(const value_t &value_) {
+            std::unique_lock lock(mutex_);
             current_node->set_value(value_);
         }
     };
