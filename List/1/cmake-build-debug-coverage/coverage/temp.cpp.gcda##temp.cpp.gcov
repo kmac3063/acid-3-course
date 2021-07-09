@@ -1,0 +1,25 @@
+        -:    0:Source:D:/Study/6_semester/Tehnologia programmirovaniya/1/temp.cpp
+        -:    0:Graph:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcno
+        -:    0:Data:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include "consistent_linked_list.h"
+        -:    2:
+        -:    3:#include <iostream>
+        -:    4:#include <vector>
+        -:    5:#include <algorithm>
+        -:    6:#include <numeric>
+        -:    7:#include <time.h>
+        -:    8:
+        -:    9:#include "func_tests.h"
+        -:   10:
+        -:   11:using namespace std;
+        -:   12:
+        1:   13:int main() {
+        1:   14:    srand(time(NULL));
+        1:   14-block  0
+        -:   15:
+        1:   16:    start_func_tests();
+        -:   17:
+        1:   18:    return 0;
+        -:   19:}

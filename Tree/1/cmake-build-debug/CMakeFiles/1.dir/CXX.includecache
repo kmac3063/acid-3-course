@@ -1,0 +1,50 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Study/6_semester/Razr progr obespech/Tree/1/consistent_tree.h
+
+D:/Study/6_semester/Razr progr obespech/Tree/1/main.cpp
+tests/tree_test.h
+D:/Study/6_semester/Razr progr obespech/Tree/1/tests/tree_test.h
+
+D:/Study/6_semester/Razr progr obespech/Tree/1/tests/fail_printer.h
+string
+-
+
+D:/Study/6_semester/Razr progr obespech/Tree/1/tests/tree_test.h
+iostream
+-
+vector
+-
+set
+-
+string
+-
+algorithm
+-
+../consistent_tree.h
+D:/Study/6_semester/Razr progr obespech/Tree/1/consistent_tree.h
+fail_printer.h
+D:/Study/6_semester/Razr progr obespech/Tree/1/tests/fail_printer.h
+../utils.h
+D:/Study/6_semester/Razr progr obespech/Tree/1/utils.h
+
+D:/Study/6_semester/Razr progr obespech/Tree/1/utils.h
+string
+-
+vector
+-
+set
+-
+algorithm
+-
+chrono
+-
+random
+-
+

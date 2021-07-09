@@ -1,0 +1,58 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Study/6_semester/Tehnologia programmirovaniya/2/consistent_linked_list.h
+iostream
+-
+vector
+-
+exception
+-
+mutex
+-
+thread
+-
+
+D:/Study/6_semester/Tehnologia programmirovaniya/2/func_tests.h
+iostream
+D:/Study/6_semester/Tehnologia programmirovaniya/2/iostream
+vector
+D:/Study/6_semester/Tehnologia programmirovaniya/2/vector
+utils.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/utils.h
+consistent_linked_list.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/consistent_linked_list.h
+
+D:/Study/6_semester/Tehnologia programmirovaniya/2/temp.cpp
+algorithm
+-
+ctime
+-
+func_tests.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/func_tests.h
+thread_with_lock_list_tests.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/thread_with_lock_list_tests.h
+
+D:/Study/6_semester/Tehnologia programmirovaniya/2/thread_with_lock_list_tests.h
+iostream
+D:/Study/6_semester/Tehnologia programmirovaniya/2/iostream
+vector
+D:/Study/6_semester/Tehnologia programmirovaniya/2/vector
+thread
+-
+utils.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/utils.h
+consistent_linked_list.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/consistent_linked_list.h
+
+D:/Study/6_semester/Tehnologia programmirovaniya/2/utils.h
+vector
+-
+consistent_linked_list.h
+D:/Study/6_semester/Tehnologia programmirovaniya/2/consistent_linked_list.h
+

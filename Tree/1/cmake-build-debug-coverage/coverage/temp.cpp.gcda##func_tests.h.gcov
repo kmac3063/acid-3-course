@@ -1,0 +1,577 @@
+        -:    0:Source:D:/Study/6_semester/Tehnologia programmirovaniya/1/func_tests.h
+        -:    0:Graph:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcno
+        -:    0:Data:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include "iostream"
+        -:    4:#include "vector"
+        -:    5:
+        -:    6:#include "utils.h"
+        -:    7:#include "consistent_linked_list.h"
+        -:    8:
+        -:    9:const int N_TEST = 100;
+        -:   10:
+        -:   11:string test_case = "NULL";
+        -:   12:
+     2605:   13:void REQUIRE(bool b) {
+     2605:   14:    if (!b) {
+     2605:   14-block  0
+    #####:   15:        throw runtime_error("Fail. Test: " + test_case);
+    %%%%%:   15-block  0
+    %%%%%:   15-block  1
+    %%%%%:   15-block  2
+    $$$$$:   15-block  3
+    $$$$$:   15-block  4
+    $$$$$:   15-block  5
+        -:   16:    }
+     2605:   17:}
+     2605:   17-block  0
+        -:   18:
+        1:   19:void push_back() {
+        1:   20:    test_case = "push_back";
+        1:   20-block  0
+        2:   21:    consistent_linked_list<int> list;
+        1:   21-block  0
+    $$$$$:   21-block  1
+        2:   22:    vector<int> v = {};
+        1:   22-block  0
+        1:   22-block  1
+    $$$$$:   22-block  2
+      101:   23:    for (int i = 0; i < N_TEST; i++) {
+      101:   23-block  0
+      100:   24:        int rnd_number = rand(-1e3, 1e3);
+      100:   24-block  0
+        -:   25:
+      100:   26:        v.push_back(rnd_number);
+      100:   27:        list.push_back(rnd_number);
+      100:   27-block  0
+      100:   28:        REQUIRE(list.to_vector() == v);
+      100:   28-block  0
+      100:   28-block  1
+      100:   28-block  2
+      100:   28-block  3
+    $$$$$:   28-block  4
+    $$$$$:   28-block  5
+        -:   29:    }
+        1:   30:}
+        -:   31:
+        1:   32:void push_front() {
+        1:   33:    test_case = "push_front";
+        1:   33-block  0
+        2:   34:    consistent_linked_list<int> list;
+        1:   34-block  0
+    $$$$$:   34-block  1
+        2:   35:    vector<int> v(N_TEST);
+        1:   35-block  0
+        1:   35-block  1
+    $$$$$:   35-block  2
+    $$$$$:   35-block  3
+      101:   36:    for (int i = 0; i < N_TEST; i++) {
+      101:   36-block  0
+      100:   37:        int rnd_number = rand(-1e3, 1e3);
+      100:   37-block  0
+        -:   38:
+      100:   39:        v[N_TEST - i - 1] = rnd_number;
+      100:   40:        list.push_front(rnd_number);
+        -:   41:
+        -:   42:
+      100:   43:        bool equal = 1;
+      200:   44:        auto list_vector = list.to_vector();
+      100:   44-block  0
+      100:   44-block  1
+    $$$$$:   44-block  2
+      100:   45:        int index = 0;
+        -:   46:
+      100:   47:        REQUIRE(list_vector.size() == i + 1);
+      100:   47-block  0
+        -:   48:
+     5150:   49:        for (int j = N_TEST - i - 1; j < N_TEST; j++) {
+      100:   49-block  0
+     5150:   49-block  1
+     5050:   49-block  2
+     5050:   50:            if (v[j] != list_vector[index++]) {
+     5050:   50-block  0
+    #####:   51:                equal = 0;
+    #####:   52:                break;
+    %%%%%:   52-block  0
+        -:   53:            }
+        -:   54:        }
+      100:   55:        REQUIRE(equal);
+      100:   55-block  0
+        -:   56:    }
+        1:   57:}
+        -:   58:
+        1:   59:void pop_first() {
+        1:   60:    test_case = "pop_first";
+        1:   60-block  0
+        2:   61:    consistent_linked_list<int> list;
+        1:   61-block  0
+    $$$$$:   61-block  1
+        1:   62:    fill_random(list, N_TEST, (int) -1e3, (int) 1e3);
+        1:   62-block  0
+    $$$$$:   62-block  1
+    $$$$$:   62-block  2
+        2:   63:    auto v = list.to_vector();
+        1:   63-block  0
+        1:   63-block  1
+    $$$$$:   63-block  2
+        -:   64:
+      101:   65:    for (int i = 0; i < N_TEST; ++i) {
+        1:   65-block  0
+      101:   65-block  1
+      100:   66:        list.pop_first();
+      100:   66-block  0
+        -:   67:
+      200:   68:        auto list_vector = list.to_vector();
+      100:   68-block  0
+      100:   68-block  1
+    $$$$$:   68-block  2
+      100:   69:        bool equal = 1;
+        -:   70:
+     5050:   71:        for (int j = i + 1; j < N_TEST; j++) {
+      100:   71-block  0
+     5050:   71-block  1
+     4950:   71-block  2
+     4950:   72:            if (v[j] != list_vector[j - i - 1]) {
+     4950:   72-block  0
+    #####:   73:                equal = 0;
+    #####:   74:                break;
+    %%%%%:   74-block  0
+        -:   75:            }
+        -:   76:        }
+      100:   77:        REQUIRE(equal);
+      100:   77-block  0
+        -:   78:    }
+        1:   79:}
+        -:   80:
+        1:   81:void pop_last() {
+        1:   82:    test_case = "pop_last";
+        1:   82-block  0
+        2:   83:    consistent_linked_list<int> list;
+        1:   83-block  0
+    $$$$$:   83-block  1
+        1:   84:    fill_random(list, N_TEST, 1, 100);
+        1:   84-block  0
+    $$$$$:   84-block  1
+    $$$$$:   84-block  2
+        2:   85:    auto v = list.to_vector();
+        1:   85-block  0
+        1:   85-block  1
+    $$$$$:   85-block  2
+        -:   86:
+      101:   87:    for (int i = 0; i < N_TEST; ++i) {
+        1:   87-block  0
+      101:   87-block  1
+      100:   88:        list.pop_last();
+      100:   88-block  0
+        -:   89:
+      200:   90:        auto list_vector = list.to_vector();
+      100:   90-block  0
+      100:   90-block  1
+    $$$$$:   90-block  2
+      100:   91:        bool equal = 1;
+        -:   92:
+     5050:   93:        for (int j = 0; j < N_TEST - i - 1; j++) {
+      100:   93-block  0
+     5050:   93-block  1
+     4950:   93-block  2
+     4950:   94:            if (v[j] != list_vector[j]) {
+     4950:   94-block  0
+    #####:   95:                equal = 0;
+    #####:   96:                break;
+    %%%%%:   96-block  0
+        -:   97:            }
+        -:   98:        }
+      100:   99:        REQUIRE(equal);
+      100:   99-block  0
+        -:  100:    }
+        1:  101:}
+        -:  102:
+        1:  103:void front() {
+        1:  104:    test_case = "front";
+        1:  104-block  0
+        2:  105:    consistent_linked_list<int> list;
+        1:  105-block  0
+        1:  105-block  1
+    $$$$$:  105-block  2
+        1:  106:    const int BACK_NUMBER = 0;
+        1:  107:    list.push_back(BACK_NUMBER);
+        1:  107-block  0
+      100:  108:    for (int i = 0; i < N_TEST - 1; ++i) {
+        1:  108-block  0
+      100:  108-block  1
+       99:  108-block  2
+       99:  109:        int rnd_number = rand(-1e3, 1e3);
+       99:  109-block  0
+       99:  110:        list.push_front(rnd_number);
+        -:  111:
+       99:  112:        REQUIRE(list.front() == rnd_number);
+       99:  112-block  0
+       99:  112-block  1
+       99:  113:        REQUIRE(list.back() == BACK_NUMBER);
+       99:  113-block  0
+       99:  113-block  1
+        -:  114:    }
+        1:  115:}
+        -:  116:
+        1:  117:void back() {
+        1:  118:    test_case = "back";
+        1:  118-block  0
+        2:  119:    consistent_linked_list<int> list;
+        1:  119-block  0
+        1:  119-block  1
+    $$$$$:  119-block  2
+        1:  120:    const int FRONT_NUMBER = 0;
+        1:  121:    list.push_front(FRONT_NUMBER);
+        1:  121-block  0
+      100:  122:    for (int i = 0; i < N_TEST - 1; ++i) {
+        1:  122-block  0
+      100:  122-block  1
+       99:  122-block  2
+       99:  123:        int rnd_number = rand(-1e3, 1e3);
+       99:  123-block  0
+       99:  124:        list.push_back(rnd_number);
+        -:  125:
+       99:  126:        REQUIRE(list.front() == FRONT_NUMBER);
+       99:  126-block  0
+       99:  126-block  1
+       99:  127:        REQUIRE(list.back() == rnd_number);
+       99:  127-block  0
+       99:  127-block  1
+        -:  128:    }
+        1:  129:}
+        -:  130:
+        1:  131:void begin() {
+        -:  132:
+        1:  133:}
+        -:  134:
+        1:  135:void end() {
+        -:  136:
+        1:  137:}
+        -:  138:
+        1:  139:void empty_from_vector() {
+        2:  140:    consistent_linked_list<int> list_from_vector(get_vec<int>({}));
+        1:  140-block  0
+        1:  140-block  1
+    $$$$$:  140-block  2
+    $$$$$:  140-block  3
+    $$$$$:  140-block  4
+    $$$$$:  140-block  5
+        1:  141:    REQUIRE(list_from_vector.empty());
+        1:  142:    list_from_vector.push_back(1);
+        1:  142-block  0
+    $$$$$:  142-block  1
+        1:  143:    REQUIRE(!list_from_vector.empty());
+        1:  143-block  0
+        -:  144:
+        2:  145:    consistent_linked_list<int> list_from_vector_not_empty(get_vec({1, 2, 3}));
+        1:  145-block  0
+        1:  145-block  1
+        1:  145-block  2
+    $$$$$:  145-block  3
+    $$$$$:  145-block  4
+    $$$$$:  145-block  5
+    $$$$$:  145-block  6
+        1:  146:    REQUIRE(!list_from_vector_not_empty.empty());
+        1:  147:}
+        -:  148:
+        1:  149:void empty_push_and_pop() {
+        2:  150:    consistent_linked_list<int> list;
+        1:  150-block  0
+        1:  150-block  1
+    $$$$$:  150-block  2
+        1:  151:    REQUIRE(list.empty());
+        1:  151-block  0
+        -:  152:
+      101:  153:    for (int i = 0; i < N_TEST; ++i) {
+        1:  153-block  0
+      101:  153-block  1
+      100:  153-block  2
+      100:  154:        list.push_back(i);
+      100:  154-block  0
+      100:  155:        REQUIRE(!list.empty());
+      100:  155-block  0
+        -:  156:
+      100:  157:        list.pop_first();
+      100:  157-block  0
+      100:  158:        REQUIRE(list.empty());
+      100:  158-block  0
+        -:  159:    }
+        1:  160:}
+        -:  161:
+        1:  162:void empty_push_then_pop() {
+        2:  163:    consistent_linked_list<int> list;
+        1:  163-block  0
+        1:  163-block  1
+    $$$$$:  163-block  2
+        -:  164:
+      101:  165:    for (int i = 0; i < N_TEST; ++i) {
+        1:  165-block  0
+      101:  165-block  1
+      100:  165-block  2
+      100:  166:        list.push_back(i);
+      100:  166-block  0
+      100:  167:        REQUIRE(!list.empty());
+      100:  167-block  0
+        -:  168:    }
+        -:  169:
+      101:  170:    for (int i = 0; i < N_TEST; ++i) {
+        1:  170-block  0
+      101:  170-block  1
+      100:  170-block  2
+      100:  171:        REQUIRE(!list.empty());
+      100:  171-block  0
+      100:  172:        list.pop_last();
+      100:  172-block  0
+        -:  173:    }
+        1:  174:    REQUIRE(list.empty());
+        1:  174-block  0
+        1:  175:}
+        -:  176:
+        1:  177:void size() {
+        1:  178:    test_case = "size";
+        1:  178-block  0
+        2:  179:    consistent_linked_list<int> list;
+        1:  179-block  0
+        1:  179-block  1
+    $$$$$:  179-block  2
+        1:  180:    REQUIRE(list.size() == 0);
+        1:  180-block  0
+      101:  181:    for (int i = 0; i < N_TEST; ++i) {
+        1:  181-block  0
+      101:  181-block  1
+      100:  181-block  2
+      100:  182:        list.push_back(0);
+      100:  182-block  0
+    $$$$$:  182-block  1
+      100:  183:        REQUIRE(list.size() == i + 1);
+      100:  183-block  0
+        -:  184:    }
+        -:  185:
+      101:  186:    for (int i = 0; i < N_TEST; ++i) {
+        1:  186-block  0
+      101:  186-block  1
+      100:  186-block  2
+      100:  187:        list.pop_last();
+      100:  187-block  0
+      100:  188:        REQUIRE(list.size() == N_TEST - i - 1);
+      100:  188-block  0
+        -:  189:    }
+        1:  190:}
+        -:  191:
+        1:  192:void size_random() {
+        1:  193:    test_case = "size_random";
+        1:  193-block  0
+        2:  194:    consistent_linked_list<int> list;
+        1:  194-block  0
+        1:  194-block  1
+    $$$$$:  194-block  2
+        1:  195:    REQUIRE(list.size() == 0);
+        1:  195-block  0
+        1:  196:    int real_size = 0;
+      101:  197:    for (int i = 0; i < N_TEST; ++i) {
+        1:  197-block  0
+      101:  197-block  1
+      100:  197-block  2
+      100:  198:        bool rnd = rand(0, 1);
+      100:  198-block  0
+      100:  199:        if (rnd || real_size == 0) {
+       50:  199-block  0
+       51:  200:            list.push_back(0);
+       51:  200-block  0
+    $$$$$:  200-block  1
+       51:  201:            real_size++;
+       51:  201-block  0
+        -:  202:        } else {
+       49:  203:            list.pop_last();
+       49:  203-block  0
+       49:  204:            real_size--;
+       49:  204-block  0
+        -:  205:        }
+        -:  206:
+      100:  207:        REQUIRE(list.size() == real_size);
+      100:  207-block  0
+        -:  208:    }
+        1:  209:}
+        -:  210:
+        1:  211:void erase() {
+        1:  212:    test_case = "erase";
+        1:  212-block  0
+        2:  213:    consistent_linked_list<int> list;
+        1:  213-block  0
+        1:  213-block  1
+    $$$$$:  213-block  2
+        -:  214:
+        1:  215:    fill_range(list, 0, N_TEST - 1);
+        1:  215-block  0
+    $$$$$:  215-block  1
+    $$$$$:  215-block  2
+        -:  216:
+      101:  217:    for (int i = 0; i < N_TEST; ++i) {
+        1:  217-block  0
+      101:  217-block  1
+      100:  217-block  2
+      100:  218:        REQUIRE(list.contain(i));
+      100:  218-block  0
+      100:  218-block  1
+      100:  219:        list.erase(i);
+      100:  219-block  0
+      100:  220:        REQUIRE(!list.contain(i));
+      100:  220-block  0
+      100:  220-block  1
+        -:  221:    }
+        1:  222:    REQUIRE(list.n_deleted_node == N_TEST);
+        1:  222-block  0
+        1:  223:}
+        -:  224:
+        1:  225:void find() {
+        1:  226:    test_case = "find";
+        1:  226-block  0
+        2:  227:    consistent_linked_list<int> list;
+        1:  227-block  0
+        1:  227-block  1
+    $$$$$:  227-block  2
+      101:  228:    for (int i = 0; i < N_TEST; ++i) {
+        1:  228-block  0
+      101:  228-block  1
+      100:  229:        REQUIRE(list.find(i) == list.end());
+      100:  229-block  0
+      100:  229-block  1
+      100:  229-block  2
+      100:  229-block  3
+    $$$$$:  229-block  4
+    $$$$$:  229-block  5
+    $$$$$:  229-block  6
+    $$$$$:  229-block  7
+        -:  230:    }
+        -:  231:
+        1:  232:    fill_range(list, 0, N_TEST - 1);
+        1:  232-block  0
+    $$$$$:  232-block  1
+    $$$$$:  232-block  2
+        -:  233:
+      101:  234:    for (int i = 0; i < N_TEST; ++i) {
+        1:  234-block  0
+      101:  234-block  1
+      200:  235:        auto it = list.find(i);
+      100:  235-block  0
+      100:  235-block  1
+    $$$$$:  235-block  2
+      100:  236:        REQUIRE(it != list.end());
+      100:  236-block  0
+      100:  236-block  1
+      100:  236-block  2
+    $$$$$:  236-block  3
+    $$$$$:  236-block  4
+      100:  237:        REQUIRE(it.get_node()->value == i);
+      100:  238:        REQUIRE(*it == i);
+      100:  238-block  0
+        -:  239:    }
+        -:  240:
+      101:  241:    for (int i = 0; i < N_TEST; ++i) {
+        1:  241-block  0
+      101:  241-block  1
+      100:  242:        REQUIRE(!list.contain(-i - 1));
+      100:  242-block  0
+      100:  242-block  1
+      100:  242-block  2
+    $$$$$:  242-block  3
+        -:  243:    }
+        1:  244:}
+        -:  245:
+        1:  246:void contain() {
+        1:  247:    test_case = "contain";
+        1:  247-block  0
+        2:  248:    consistent_linked_list<int> list;
+        1:  248-block  0
+        1:  248-block  1
+    $$$$$:  248-block  2
+      101:  249:    for (int i = 0; i < N_TEST; ++i) {
+        1:  249-block  0
+      101:  249-block  1
+      100:  249-block  2
+      100:  250:        REQUIRE(!list.contain(i));
+      100:  250-block  0
+      100:  250-block  1
+        -:  251:    }
+        -:  252:
+        1:  253:    fill_range(list, 0, N_TEST - 1);
+        1:  253-block  0
+    $$$$$:  253-block  1
+    $$$$$:  253-block  2
+        -:  254:
+      101:  255:    for (int i = 0; i < N_TEST; ++i) {
+        1:  255-block  0
+      101:  255-block  1
+      100:  255-block  2
+      100:  256:        REQUIRE(list.contain(i));
+      100:  256-block  0
+      100:  256-block  1
+        -:  257:    }
+        -:  258:
+      101:  259:    for (int i = 0; i < N_TEST; ++i) {
+        1:  259-block  0
+      101:  259-block  1
+      100:  260:        REQUIRE(!list.contain(-i - 1));
+      100:  260-block  0
+      100:  260-block  1
+      100:  260-block  2
+    $$$$$:  260-block  3
+        -:  261:    }
+        1:  262:}
+        -:  263:
+        1:  264:void to_vector() {
+        1:  265:    test_case = "to_vector";
+        1:  265-block  0
+        2:  266:    consistent_linked_list<int> list;
+        1:  266-block  0
+    $$$$$:  266-block  1
+        1:  267:    vector<int> v;
+        1:  267-block  0
+    $$$$$:  267-block  1
+        -:  268:
+      101:  269:    for (int i = 0; i < N_TEST; ++i) {
+      101:  269-block  0
+      100:  269-block  1
+      100:  270:        int rnd_number = rand(-1e3, 1e3);
+      100:  270-block  0
+        -:  271:
+      100:  272:        list.push_back(rnd_number);
+      100:  273:        v.push_back(rnd_number);
+      100:  273-block  0
+        -:  274:    }
+        -:  275:
+        1:  276:    REQUIRE(v == list.to_vector());
+        1:  276-block  0
+        1:  276-block  1
+        1:  276-block  2
+        1:  276-block  3
+    $$$$$:  276-block  4
+    $$$$$:  276-block  5
+        1:  277:}
+        -:  278:
+        -:  279:
+        1:  280:void start_func_tests() {
+        1:  281:    push_back();
+        1:  281-block  0
+        1:  282:    push_front();
+        1:  283:    pop_first();
+        1:  284:    pop_last();
+        1:  285:    front();
+        1:  286:    back();
+        1:  287:    begin();
+        1:  288:    end();
+        1:  289:    empty_from_vector();
+        1:  290:    empty_push_and_pop();
+        1:  291:    empty_push_then_pop();
+        1:  292:    size();
+        1:  293:    size_random();
+        1:  294:    erase();
+        1:  295:    contain();
+        1:  296:    to_vector();
+        1:  297:    find();
+        -:  298:
+        1:  299:    std::cout << "Function tests passed. Nice!";
+        1:  300:}

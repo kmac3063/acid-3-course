@@ -1,0 +1,539 @@
+        -:    0:Source:D:/Study/6_semester/Tehnologia programmirovaniya/1/consistent_linked_list.h
+        -:    0:Graph:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcno
+        -:    0:Data:D:\Study\6_semester\Tehnologia programmirovaniya\1\cmake-build-debug-coverage\CMakeFiles\1.dir\temp.cpp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#pragma once
+        -:    2:
+        -:    3:#include <iostream>
+        -:    4:#include <vector>
+        -:    5:#include <exception>
+        -:    6:
+        -:    7:using namespace std;
+        -:    8:
+        -:    9:class consistent_linked_list_exception : exception {
+        -:   10:public:
+        -:   11:    string reason;
+        -:   12:
+    #####:   13:    consistent_linked_list_exception(const string &reason_) {
+    %%%%%:   13-block  0
+    $$$$$:   13-block  1
+    $$$$$:   13-block  2
+    #####:   14:        reason = reason_;
+    #####:   15:    }
+    %%%%%:   15-block  0
+        -:   16:
+        -:   17:    char *what() {
+        -:   18:        return const_cast<char *>(reason.c_str());
+        -:   19:    }
+        -:   20:};
+        -:   21:
+        -:   22:template<typename T>
+        -:   23:class consistent_linked_list {
+        -:   24:private:
+        -:   25:    class Node {
+        -:   26:    public:
+     1371:   27:        Node(consistent_linked_list<T> *base_list_, const T &t) :
+     1371:   28:                base_list(base_list_), value(t) {}
+        -:   29:
+        -:   30:        consistent_linked_list<T> *base_list;
+        -:   31:        T value;
+        -:   32:        Node *prev = nullptr;
+        -:   33:        Node *next = nullptr;
+        -:   34:
+        -:   35:        bool is_deleted = false;
+        -:   36:        int ref_count = 0;
+        -:   37:
+   346734:   38:        void add_ref_count(const int &value_) {
+   346734:   39:            if (this == base_list->END_NODE) {
+   346734:   39-block  0
+   117988:   40:                return;
+   117988:   40-block  0
+        -:   41:            }
+        -:   42:
+   228746:   43:            ref_count += value_;
+   228746:   44:            if (ref_count <= 0) {
+   228746:   44-block  0
+     1355:   45:                base_list->n_deleted_node++;
+        -:   46://                cout << "It's all, we deleted :( value = " << value << endl;
+     1355:   47:                delete this;
+     1355:   47-block  0
+        -:   48:            }
+        -:   49:        }
+        -:   50:    };
+        -:   51:
+        -:   52:    Node *END_NODE;
+        -:   53:
+        -:   54:    Node *first;
+        -:   55:    Node *last;
+        -:   56:
+        -:   57:    size_t list_size = 0;
+        -:   58:
+     1355:   59:    Node *create_new_node(const T &value) {
+     1355:   60:        return new Node(this, value);
+     1355:   60-block  0
+        -:   61:    }
+        -:   62:
+     1355:   63:    void remove_node(Node *node) {
+    1355*:   64:        if (node->is_deleted) return;
+     1355:   64-block  0
+    %%%%%:   64-block  1
+        -:   65:
+     1355:   66:        node->is_deleted = 1;
+        -:   67:
+     1355:   68:        Node *prev = node->prev;
+     1355:   69:        Node *next = node->next;
+        -:   70:
+     1355:   71:        prev->next = next;
+     1355:   72:        next->prev = prev;
+        -:   73:
+     1355:   74:        node->add_ref_count(-2);
+     1355:   74-block  0
+        -:   75:
+     1355:   76:        if (first == last) {
+      117:   77:            first = last = END_NODE;
+      117:   77-block  0
+     1238:   78:        } else if (node == first) {
+     1238:   78-block  0
+      894:   79:            first = next;
+      894:   79-block  0
+      344:   80:        } else if (node == last) {
+      344:   80-block  0
+      344:   81:            last = prev;
+      344:   81-block  0
+        -:   82:        }
+        -:   83:
+        -:   84:
+     1355:   85:        list_size--;
+     1355:   85-block  0
+        -:   86:    }
+        -:   87:
+        -:   88:public:
+        -:   89:    size_t n_deleted_node = 0;
+        -:   90:
+        -:   91:    class consistent_iterator;
+        -:   92:
+       16:   93:    consistent_linked_list() {
+       16:   94:        END_NODE = new Node(this, 0);
+       16:   94-block  0
+       16:   94-block  1
+       16:   95:        END_NODE->next = END_NODE;
+       16:   96:        END_NODE->prev = END_NODE;
+       16:   97:        first = last = END_NODE;
+       16:   98:    };
+        -:   99:
+        2:  100:    consistent_linked_list(const vector<T> &v) : consistent_linked_list() {
+        2:  100-block  0
+    $$$$$:  100-block  1
+        5:  101:        for (auto &el : v) {
+        5:  101-block  0
+        3:  101-block  1
+        3:  101-block  2
+        3:  102:            push_back(el);
+        -:  103:        }
+        2:  104:    }
+        2:  104-block  0
+        -:  105:
+       16:  106:    ~consistent_linked_list() {
+      722:  107:        for (auto it = begin(); it != end(); it++) {
+       16:  107-block  0
+      722:  107-block  1
+       16:  107-block  2
+      706:  108:            erase(it);
+      706:  108-block  0
+        -:  109:        }
+       16:  110:        delete END_NODE;
+       16:  111:    }
+        -:  112:
+      200:  113:    void push_front(const T &value) {
+      200:  114:        Node *new_node = create_new_node(value);
+      200:  114-block  0
+        -:  115:
+      200:  116:        new_node->prev = END_NODE;
+      200:  117:        END_NODE->next = new_node;
+        -:  118:
+      200:  119:        new_node->next = first;
+      200:  120:        first->prev = new_node;
+        -:  121:
+      200:  122:        new_node->add_ref_count(2);
+        -:  123:
+      200:  124:        first = new_node;
+      200:  125:        if (last == END_NODE) {
+        2:  126:            last = first;
+        2:  126-block  0
+        -:  127:        }
+        -:  128:
+      200:  129:        list_size++;
+      200:  130:    }
+        -:  131:
+     1155:  132:    void push_back(const T &value) {
+     1155:  133:        Node *new_node = create_new_node(value);
+     1155:  133-block  0
+        -:  134:
+     1155:  135:        new_node->prev = last;
+     1155:  136:        last->next = new_node;
+        -:  137:
+     1155:  138:        new_node->next = END_NODE;
+     1155:  139:        END_NODE->prev = new_node;
+        -:  140:
+     1155:  141:        new_node->add_ref_count(2);
+        -:  142:
+     1155:  143:        last = new_node;
+     1155:  144:        if (first == END_NODE) {
+      115:  145:            first = last;
+      115:  145-block  0
+        -:  146:        }
+        -:  147:
+     1155:  148:        list_size++;
+     1155:  149:    }
+        -:  150:
+      200:  151:    void pop_first() {
+      200:  152:        remove_node(first);
+      200:  152-block  0
+      200:  153:    }
+        -:  154:
+      349:  155:    void pop_last() {
+      349:  156:        remove_node(last);
+      349:  156-block  0
+      349:  157:    }
+        -:  158:
+      198:  159:    T front() {
+      198:  160:        if (list_size == 0) {
+      198:  160-block  0
+    #####:  161:            throw consistent_linked_list_exception("List size is 0.");
+    %%%%%:  161-block  0
+    %%%%%:  161-block  1
+    %%%%%:  161-block  2
+    $$$$$:  161-block  3
+    $$$$$:  161-block  4
+    $$$$$:  161-block  5
+    $$$$$:  161-block  6
+    $$$$$:  161-block  7
+        -:  162:        }
+      198:  163:        return first->value;
+      198:  163-block  0
+      198:  163-block  1
+        -:  164:    }
+        -:  165:
+      198:  166:    T back() {
+      198:  167:        if (list_size == 0) {
+      198:  167-block  0
+    #####:  168:            throw consistent_linked_list_exception("List size is 0.");
+    %%%%%:  168-block  0
+    %%%%%:  168-block  1
+    %%%%%:  168-block  2
+    $$$$$:  168-block  3
+    $$$$$:  168-block  4
+    $$$$$:  168-block  5
+    $$$$$:  168-block  6
+    $$$$$:  168-block  7
+        -:  169:        }
+      198:  170:        return last->value;
+      198:  170-block  0
+      198:  170-block  1
+        -:  171:    }
+        -:  172:
+     1319:  173:    consistent_iterator begin() {
+     1319:  174:        return consistent_iterator(first);
+     1319:  174-block  0
+        -:  175:    }
+        -:  176:
+    27575:  177:    consistent_iterator end() {
+    27575:  178:        return consistent_iterator(END_NODE);
+    27575:  178-block  0
+        -:  179:    }
+        -:  180:
+      405:  181:    bool empty() {
+      405:  182:        return list_size == 0;
+      405:  182-block  0
+        -:  183:    }
+        -:  184:
+      302:  185:    size_t size() {
+      302:  186:        return list_size;
+      302:  186-block  0
+        -:  187:    }
+        -:  188:
+      806:  189:    void erase(consistent_iterator t) {
+      806:  190:        Node *node = t.get_node();
+      806:  190-block  0
+      806:  191:        if (node == END_NODE) {
+    #####:  192:            throw consistent_linked_list_exception("Deleted end iterator.");
+    %%%%%:  192-block  0
+    %%%%%:  192-block  1
+    %%%%%:  192-block  2
+    $$$$$:  192-block  3
+    $$$$$:  192-block  4
+    $$$$$:  192-block  5
+    $$$$$:  192-block  6
+    $$$$$:  192-block  7
+        -:  193:        }
+      806:  194:        remove_node(node);
+      806:  194-block  0
+      806:  195:    }
+        -:  196:
+      100:  197:    void erase(const T &value) {
+      100:  198:        erase(find(value));
+      100:  198-block  0
+      100:  198-block  1
+    $$$$$:  198-block  2
+      100:  199:    }
+        -:  200:
+      300:  201:    consistent_iterator find(const T &value) {
+     5250:  202:        for (consistent_iterator it = begin(); it != end(); it++) {
+      300:  202-block  0
+     5250:  202-block  1
+     5250:  202-block  2
+     4950:  202-block  3
+     4950:  202-block  4
+    $$$$$:  202-block  5
+     5150:  203:            if (*it == value) {
+     5150:  203-block  0
+      200:  204:                return it;
+      200:  204-block  0
+      200:  204-block  1
+        -:  205:            }
+        -:  206:        }
+      100:  207:        return end();
+      100:  207-block  0
+        -:  208:    }
+        -:  209:
+      600:  210:    bool contain(const T &value) {
+     1200:  211:        consistent_iterator it = begin();
+      600:  211-block  0
+    $$$$$:  211-block  1
+     1200:  212:        consistent_iterator end_it = end();
+      600:  212-block  0
+      600:  212-block  1
+    $$$$$:  212-block  2
+    30500:  213:        while (it != end_it) {
+    30500:  213-block  0
+    30500:  213-block  1
+    30100:  214:            if (value == *it) {
+    30100:  214-block  0
+      200:  215:                return true;
+      200:  215-block  0
+        -:  216:            }
+    29900:  217:            it++;
+    29900:  217-block  0
+    29900:  217-block  1
+        -:  218:        }
+      400:  219:        return false;
+      400:  219-block  0
+        -:  220:    }
+        -:  221:
+        -:  222:    void shrink_to_fit() {
+        -:  223:        consistent_linked_list list;
+        -:  224:        consistent_iterator it = begin();
+        -:  225:        consistent_iterator end_it = end();
+        -:  226:        while (it != end_it) {
+        -:  227:            list.push_back(*it);
+        -:  228:        }
+        -:  229:
+        -:  230:        while (first != END_NODE) {
+        -:  231:            Node* next = first->next;
+        -:  232:            delete first;
+        -:  233:            first = next;
+        -:  234:        }
+        -:  235:
+        -:  236:        *this = list;
+        -:  237:    }
+        -:  238:
+        -:  239:    void print() {
+        -:  240:        string offset_space = string(' ', 3);
+        -:  241:        cout << "{ size = " << list_size << endl;
+        -:  242:        consistent_iterator it = begin();
+        -:  243:        for (size_t i = 0; i < list_size; i++) {
+        -:  244:            cout << offset_space <<
+        -:  245:                 "[value = " << *it <<
+        -:  246:                 ", ref_count = " << it->get_node()->ref_count <<
+        -:  247:                 "]";
+        -:  248:            it++;
+        -:  249:            if (i != list_size - 1) {
+        -:  250:                cout << ", ";
+        -:  251:            }
+        -:  252:            cout << '\n';
+        -:  253:        }
+        -:  254:        cout << "}\n";
+        -:  255:    }
+        -:  256:
+      403:  257:    vector<T> to_vector() {
+      403:  258:        vector<T> v(list_size);
+      403:  258-block  0
+    $$$$$:  258-block  1
+      403:  259:        int i = 0;
+    20703:  260:        for (auto it = begin(); it != end(); it++) {
+    20703:  260-block  0
+    20703:  260-block  1
+    20300:  260-block  2
+      403:  260-block  3
+    $$$$$:  260-block  4
+    20300:  261:            v[i++] = *it;
+    20300:  261-block  0
+        -:  262:        }
+      403:  263:        return v;
+      403:  263-block  0
+        -:  264:    }
+        -:  265:
+        -:  266:    class consistent_iterator {
+        -:  267:    private:
+        -:  268:        Node *node = nullptr;
+        -:  269:
+        -:  270:        Node* get_not_deleted_prev(Node* node_) {
+        -:  271:            Node* prev = node_->prev;
+        -:  272:            Node* end_node = node_->base_list->END_NODE;
+        -:  273:            while (prev->is_deleted && prev != end_node) {
+        -:  274:                prev = prev->prev;
+        -:  275:            }
+        -:  276:            return prev;
+        -:  277:        }
+        -:  278:
+    55856:  279:        Node* get_not_deleted_next(Node* node_) {
+    55856:  280:            Node* next = node_->next;
+    55856:  281:            Node* end_node = node_->base_list->END_NODE;
+    55856:  281-block  0
+   55856*:  282:            while (next->is_deleted && next != end_node) {
+    55856:  282-block  0
+    %%%%%:  282-block  1
+    #####:  283:                next = next->next;
+    %%%%%:  283-block  0
+        -:  284:            }
+    55856:  285:            return next;
+    55856:  285-block  0
+        -:  286:        }
+        -:  287:    public:
+   116156:  288:        consistent_iterator(Node *node_) {
+   116156:  289:            node = node_;
+   116156:  290:            node->add_ref_count(1);
+   116156:  290-block  0
+   116156:  291:        }
+        -:  292:
+    31406:  293:        consistent_iterator(const consistent_iterator &original) :
+    31406:  294:                consistent_iterator(original.node) {}
+    31406:  294-block  0
+        -:  295:
+   116156:  296:        ~consistent_iterator() {
+   116156:  297:            node->add_ref_count(-1);
+   116156:  297-block  0
+   116156:  298:        }
+        -:  299:
+    55650:  300:        T operator*() {
+    55650:  301:            return node->value;
+    55650:  301-block  0
+        -:  302:        }
+        -:  303:
+      906:  304:        Node *get_node() {
+      906:  305:            return node;
+      906:  305-block  0
+        -:  306:        }
+        -:  307:
+        -:  308:        // prefix++
+        -:  309:        consistent_iterator operator++() {
+        -:  310:            if (node == node->base_list->END_NODE) {
+        -:  311:                throw consistent_linked_list_exception("No more element.");
+        -:  312:            }
+        -:  313:
+        -:  314:            Node* next = get_not_deleted_next(node);
+        -:  315:
+        -:  316:            node->add_ref_count(-1);
+        -:  317:            node = next;
+        -:  318:            node->add_ref_count(1);
+        -:  319:
+        -:  320:            return consistent_iterator(node);
+        -:  321:        }
+        -:  322:
+        -:  323:        // postfix++
+    55856:  324:        consistent_iterator operator++(int) {
+    55856:  325:            if (node == node->base_list->END_NODE) {
+    55856:  325-block  0
+    #####:  326:                throw consistent_linked_list_exception("No more element.");
+    %%%%%:  326-block  0
+    %%%%%:  326-block  1
+    %%%%%:  326-block  2
+    $$$$$:  326-block  3
+    $$$$$:  326-block  4
+    $$$$$:  326-block  5
+    $$$$$:  326-block  6
+    $$$$$:  326-block  7
+        -:  327:            }
+        -:  328:
+    55856:  329:            Node* next = get_not_deleted_next(node);
+    55856:  329-block  0
+    55856:  330:            consistent_iterator temp = consistent_iterator(node);
+        -:  331:
+    55856:  332:            node->add_ref_count(-1);
+    55856:  333:            node = next;
+    55856:  334:            node->add_ref_count(1);
+        -:  335:
+    55856:  336:            return temp;
+    55856:  336-block  0
+        -:  337:        }
+        -:  338:
+        -:  339:        // prefix--
+        -:  340:        consistent_iterator operator--() {
+        -:  341:            Node* prev = get_not_deleted_prev(node);
+        -:  342:
+        -:  343:            if (prev == node->base_list->END_NODE) {
+        -:  344:                throw consistent_linked_list_exception("It's first element.");
+        -:  345:            }
+        -:  346:
+        -:  347:            node->add_ref_count(-1);
+        -:  348:            node = prev;
+        -:  349:            prev->add_ref_count(1);
+        -:  350:
+        -:  351:            return consistent_iterator(node);
+        -:  352:        }
+        -:  353:
+        -:  354:        // postfix--
+        -:  355:        consistent_iterator operator--(int) {
+        -:  356:            Node* prev = get_not_deleted_prev(node);
+        -:  357:
+        -:  358:            if (prev == node->base_list->END_NODE) {
+        -:  359:                throw consistent_linked_list_exception("It's first element.");
+        -:  360:            }
+        -:  361:
+        -:  362:            consistent_iterator temp = consistent_iterator(node);
+        -:  363:
+        -:  364:            node->add_ref_count(-1);
+        -:  365:            node = prev;
+        -:  366:            node->add_ref_count(1);
+        -:  367:
+        -:  368:            return temp;
+        -:  369:        }
+        -:  370:
+    57275:  371:        bool operator!=(consistent_iterator rhs) const {
+    57275:  372:            return &(*this->node) != &(*rhs.node);
+    57275:  372-block  0
+        -:  373:        }
+        -:  374:
+      100:  375:        bool operator==(consistent_iterator rhs) const {
+      100:  376:            return &(*this->node) == &(*rhs.node);
+      100:  376-block  0
+        -:  377:        }
+        -:  378:
+        -:  379:        void erase() {
+        -:  380:            if (node->is_deleted)
+        -:  381:                return;
+        -:  382:
+        -:  383:            node->base_list->erase(*this);
+        -:  384:        }
+        -:  385:
+        -:  386:        static consistent_iterator next(consistent_iterator it) {
+        -:  387:            if (it == it->base_list->END_NODE) {
+        -:  388:                throw consistent_linked_list_exception("No more elements");
+        -:  389:            }
+        -:  390:            it->add_ref_count(-1);
+        -:  391:            it->next->add_ref_count(1);
+        -:  392:            return consistent_iterator(it->next);
+        -:  393:        }
+        -:  394:
+        -:  395:        static consistent_iterator prev(consistent_iterator it) {
+        -:  396:            if (it->prev == it->base_list->END_NODE) {
+        -:  397:                throw consistent_linked_list_exception("It's first element.");
+        -:  398:            }
+        -:  399:            it->add_ref_count(-1);
+        -:  400:            it->prev->add_ref_count(1);
+        -:  401:            return consistent_iterator(it->prev);
+        -:  402:        }
+        -:  403:    };
+        -:  404:
+        -:  405:};

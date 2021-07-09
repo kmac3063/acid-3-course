@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Study/6_semester/Razr progr obespech/1/main.cpp
+iostream
+-
+random
+-
+vector
+-
+set
+-
+ctime
+-
+algorithm
+-
+chrono
+-
+tests/fail_printer.h
+D:/Study/6_semester/Razr progr obespech/1/tests/fail_printer.h
+
+D:/Study/6_semester/Razr progr obespech/1/tests/fail_printer.h
+string
+-
+iostream
+-
+cstdio
+-
+
