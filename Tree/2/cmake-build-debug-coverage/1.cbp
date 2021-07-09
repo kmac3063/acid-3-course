@@ -86,6 +86,9 @@
 		<Unit filename="D:/Study/6_semester/Razr progr obespech/Tree/2/main.cpp">
 			<Option target="1"/>
 		</Unit>
+		<Unit filename="D:/Study/6_semester/Razr progr obespech/Tree/2/tests/coarse_grained_test.h">
+			<Option target="1"/>
+		</Unit>
 		<Unit filename="D:/Study/6_semester/Razr progr obespech/Tree/2/tests/fail_printer.h">
 			<Option target="1"/>
 		</Unit>

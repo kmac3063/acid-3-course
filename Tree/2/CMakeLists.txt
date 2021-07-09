@@ -10,6 +10,7 @@ add_executable(1
         main.cpp
         tests/fail_printer.h
         tests/tree_test.h
+        tests/coarse_grained_test.h
         consistent_tree.h
         utils.h
         )

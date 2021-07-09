@@ -1,3 +1,9 @@
+#pragma once
+
+#include <thread>
+#include <mutex>
+#include <shared_mutex>
+
 struct receiver {
     int value = 0;
 };
@@ -96,8 +102,14 @@ public:
             }
         }
 
-        void set_deleted(bool b) {
-            is_deleted_ = b;
+        void set_deleted(bool delete_flag) {
+            if (is_deleted_ && !delete_flag) {
+                tree->size_++;
+            } else if (!is_deleted_ && delete_flag) {
+                tree->size_--;
+            }
+
+            is_deleted_ = delete_flag;
 
             if (need_free()) {
                 tree->finally_erase(value);
@@ -107,7 +119,6 @@ public:
         bool is_deleted() {
             return is_deleted_;
         }
-
 
 
         void free() {
@@ -144,7 +155,7 @@ public:
     private:
         node *current_node;
     public:
-        value_node(node *node_) : current_node(node_) {}
+        explicit value_node(node *node_) : current_node(node_) {}
 
         value_t get() {
             return current_node->get_value();
@@ -161,13 +172,16 @@ public:
 
     receiver *deleted_node_receiver = nullptr;
 
+    size_t size_ = 0;
+    std::shared_mutex mutex_;
+
 
     consistent_tree() {
         HEAD_NODE = new node(this, nullptr, value_t());
         HEAD_NODE->set_parent(HEAD_NODE);
     }
 
-    consistent_tree(receiver *receiver_) : consistent_tree() {
+    explicit consistent_tree(receiver *receiver_) : consistent_tree() {
         deleted_node_receiver = receiver_;
     }
 
@@ -223,35 +237,61 @@ public:
 
 
     void insert(const value_t &value_) {
+        std::unique_lock lock(mutex_);
         HEAD_NODE->set_right(insert(HEAD_NODE->get_right(), HEAD_NODE, value_));
     }
 
     void erase(const value_t &value_) {
+        std::unique_lock lock(mutex_);
         try_remove(HEAD_NODE->get_right(), value_);
     }
 
-    void erase(iterator it) {
+    void erase(const iterator &it) {
+        std::unique_lock lock(mutex_);
         try_remove(HEAD_NODE->get_right(), (*it).get());
     }
 
     iterator find(const value_t &value_) {
+        std::shared_lock lock(mutex_);
         return iterator(find(HEAD_NODE->get_right(), value_));
     }
 
     bool empty() {
-        return HEAD_NODE->get_right() == nullptr || HEAD_NODE->get_right()->is_deleted();
+        std::shared_lock lock(mutex_);
+        return size_ == 0;
     }
 
     value_t front() {
-        return find_min(HEAD_NODE->get_right())->get_value();
+        std::shared_lock lock(mutex_);
+        node *res = find_min(HEAD_NODE->get_right());
+        if (res->is_deleted()) {
+            res = find_next(res);
+        }
+        return res->get_value();
     }
 
     value_t back() {
-        return find_max(HEAD_NODE->get_right())->get_value();
+        std::shared_lock lock(mutex_);
+        node *res = find_max(HEAD_NODE->get_right());
+        if (res->is_deleted()) {
+            res = find_prev(res);
+        }
+        return res->get_value();
+    }
+
+    size_t size() {
+        std::shared_lock lock(mutex_);
+        return size_;
+    }
+
+    void clear() {
+        std::unique_lock lock(mutex_);
+        HEAD_NODE->set_right(nullptr);
     }
 
 
     iterator begin() {
+        std::shared_lock lock(mutex_);
         node *node_ = HEAD_NODE->get_right();
 
         if (node_ == nullptr) {
@@ -263,19 +303,31 @@ public:
     }
 
     iterator end() {
+        std::shared_lock lock(mutex_);
         return iterator(HEAD_NODE);
     }
 
 
     std::vector<value_t> to_vector() {
+        std::shared_lock lock(mutex_);
         std::vector<value_t> v;
-        for (auto it = begin(); it != end(); ++it) {
-            v.push_back((*it).get());
-        }
-
+        to_vector_(v, HEAD_NODE->get_right());
         return v;
     }
 
+
+    void to_vector_(std::vector<value_t> &v, node *node_) {
+        if (node_ == nullptr) {
+            return;
+        }
+        to_vector_(v, node_->get_left());
+
+        if (!node_->is_deleted()) {
+            v.push_back(node_->get_value());
+        }
+
+        to_vector_(v, node_->get_right());
+    }
 
     height_t get_height(node *node_) {
         return node_ == nullptr ? 0 : node_->get_height();
@@ -348,6 +400,7 @@ public:
 
     node *insert(node *node_, node *parent, const value_t &value_) {
         if (node_ == nullptr) {
+            size_++;
             return new node(this, parent, value_);
         }
         if (value_ < node_->get_value()) {
@@ -433,8 +486,8 @@ public:
         return node_->is_deleted() ? HEAD_NODE : node_;
     }
 
-    static node *find_min(node *p) {
-        return p->get_left() == nullptr ? p : find_min(p->get_left());
+    static node *find_min(node *node_) {
+        return node_->get_left() == nullptr ? node_ : find_min(node_->get_left());
     }
 
     static node *find_max(node *node_) {
@@ -450,10 +503,7 @@ public:
         node *right = node_->get_right();
         if (right != nullptr) {
             auto res = find_min(right);
-            if (res->is_deleted()) {
-                return find_next(res);
-            }
-            return res;
+            return res->is_deleted() ? find_next(res) : res;
         }
 
         auto parent = node_->get_parent();
@@ -464,11 +514,29 @@ public:
         return parent->is_deleted() ? find_next(parent) : parent;
     }
 
-    /*  Симметрично c find_prev
-    static node *find_prev(node* node_) {
+    static node *find_prev(node *node_) {
+        if (node_ == node_->get_parent()) {
+            if (node_->tree->size_ == 0) {
+                return node_;
+            }
+            node *res = find_max(node_->tree->HEAD_NODE->get_right());
+            return res->is_deleted() ? find_prev(res) : res;
+        }
+        value_t value = node_->get_value();
 
+        node *left = node_->get_left();
+        if (left != nullptr) {
+            auto res = find_max(left);
+            return res->is_deleted() ? find_prev(res) : res;
+        }
+
+        auto parent = node_->get_parent();
+        while (parent->get_value() > value && parent != parent->get_parent()) {
+            parent = parent->get_parent();
+        }
+
+        return parent->is_deleted() ? find_prev(parent) : parent;
     }
-    */
 
     class iterator {
     private:
@@ -476,7 +544,7 @@ public:
     public:
         iterator() = default;
 
-        iterator(node *node_) {
+        explicit iterator(node *node_) {
             acquire(&current_node, node_);
         }
 
@@ -499,7 +567,7 @@ public:
             }
         }
 
-        value_node operator*() {
+        value_node operator*() const {
             return value_node(current_node);
         }
 
@@ -509,13 +577,11 @@ public:
             return iterator(next);
         }
 
-        /*
         iterator operator--() {
-            node *next = find_prev(current_node);
-            acquire(&current_node, next);
-            return iterator(next);
+            node *prev = find_prev(current_node);
+            acquire(&current_node, prev);
+            return iterator(prev);
         }
-        */
 
         bool operator==(const iterator &rhs) {
             return &(*this->current_node) == &(*rhs.current_node);
