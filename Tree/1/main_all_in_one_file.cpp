@@ -5,6 +5,8 @@
 #include <ctime>
 #include <algorithm>
 #include <chrono>
+#include <thread>
+#include <mutex>
 
 /** fail_printer.h */
 class fail_printer {
@@ -121,8 +123,14 @@ public:
             }
         }
 
-        void set_deleted(bool b) {
-            is_deleted_ = b;
+        void set_deleted(bool delete_flag) {
+            if (is_deleted_ && !delete_flag) {
+                tree->size_++;
+            } else if (!is_deleted_ && delete_flag) {
+                tree->size_--;
+            }
+
+            is_deleted_ = delete_flag;
 
             if (need_free()) {
                 tree->finally_erase(value);
@@ -185,6 +193,9 @@ public:
 
     receiver *deleted_node_receiver = nullptr;
 
+    size_t size_ = 0;
+
+//    std::mutex mutex_;
 
     consistent_tree() {
         HEAD_NODE = new node(this, nullptr, value_t());
@@ -254,7 +265,7 @@ public:
         try_remove(HEAD_NODE->get_right(), value_);
     }
 
-    void erase(iterator it) {
+    void erase(const iterator& it) {
         try_remove(HEAD_NODE->get_right(), (*it).get());
     }
 
@@ -263,15 +274,31 @@ public:
     }
 
     bool empty() {
-        return HEAD_NODE->get_right() == nullptr || HEAD_NODE->get_right()->is_deleted();
+        return size_ == 0;
     }
 
     value_t front() {
-        return find_min(HEAD_NODE->get_right())->get_value();
+        node* res = find_min(HEAD_NODE->get_right());
+        if (res->is_deleted()) {
+            res = find_next(res);
+        }
+        return res->get_value();
     }
 
     value_t back() {
-        return find_max(HEAD_NODE->get_right())->get_value();
+        node* res = find_max(HEAD_NODE->get_right());
+        if (res->is_deleted()) {
+            res = find_prev(res);
+        }
+        return res->get_value();
+    }
+
+    size_t size() {
+        return size_;
+    }
+
+    void clear() {
+        HEAD_NODE->set_right(nullptr);
     }
 
 
@@ -372,6 +399,7 @@ public:
 
     node *insert(node *node_, node *parent, const value_t &value_) {
         if (node_ == nullptr) {
+            size_++;
             return new node(this, parent, value_);
         }
         if (value_ < node_->get_value()) {
@@ -457,8 +485,8 @@ public:
         return node_->is_deleted() ? HEAD_NODE : node_;
     }
 
-    static node *find_min(node *p) {
-        return p->get_left() == nullptr ? p : find_min(p->get_left());
+    static node *find_min(node *node_) {
+        return node_->get_left() == nullptr ? node_ : find_min(node_->get_left());
     }
 
     static node *find_max(node *node_) {
@@ -474,10 +502,7 @@ public:
         node *right = node_->get_right();
         if (right != nullptr) {
             auto res = find_min(right);
-            if (res->is_deleted()) {
-                return find_next(res);
-            }
-            return res;
+            return res->is_deleted() ? find_next(res) : res;
         }
 
         auto parent = node_->get_parent();
@@ -488,11 +513,29 @@ public:
         return parent->is_deleted() ? find_next(parent) : parent;
     }
 
-    /*  Симметрично c find_prev
     static node *find_prev(node* node_) {
+        if (node_ == node_->get_parent()) {
+            if (node_->tree->size_ == 0) {
+                return node_;
+            }
+            node* res = find_max(node_->tree->HEAD_NODE->get_right());
+            return res->is_deleted() ? find_prev(res) : res;
+        }
+        value_t value = node_->get_value();
 
+        node *left = node_->get_left();
+        if (left != nullptr) {
+            auto res = find_max(left);
+            return res->is_deleted() ? find_prev(res) : res;
+        }
+
+        auto parent = node_->get_parent();
+        while (parent->get_value() > value && parent != parent->get_parent()) {
+            parent = parent->get_parent();
+        }
+
+        return parent->is_deleted() ? find_prev(parent) : parent;
     }
-    */
 
     class iterator {
     private:
@@ -523,7 +566,7 @@ public:
             }
         }
 
-        value_node operator*() {
+        value_node operator*() const {
             return value_node(current_node);
         }
 
@@ -533,13 +576,11 @@ public:
             return iterator(next);
         }
 
-        /*
         iterator operator--() {
-            node *next = find_prev(current_node);
-            acquire(&current_node, next);
-            return iterator(next);
+            node *prev = find_prev(current_node);
+            acquire(&current_node, prev);
+            return iterator(prev);
         }
-        */
 
         bool operator==(const iterator &rhs) {
             return &(*this->current_node) == &(*rhs.current_node);
@@ -627,19 +668,6 @@ std::vector<int> get_random_vector(int size, int start_value = 0) {
 /** utils.h */
 
 /** tree_test.h */
-template<typename T>
-void print(consistent_tree<T> &tree) {
-    auto v = tree.to_vector();
-    std::cout << "tree: [";
-    for (int i = 0; i < v.size(); i++) {
-        std::cout << v[i];
-        if (i != v.size() - 1) {
-            std::cout << ", ";
-        }
-    }
-    std::cout << "]\n";
-}
-
 class tree_test {
 private:
     std::string test_case;
@@ -661,6 +689,7 @@ private:
         }
     }
 
+
     void to_vector() {
         test_case = "to_vector";
         std::vector<std::vector<int>> tests = {
@@ -680,6 +709,7 @@ private:
             n_test++;
         }
     }
+
 
     void insert() {
         test_case = "insert";
@@ -713,7 +743,6 @@ private:
             n_test++;
         }
     }
-
 
     void find() {
         std::vector<std::vector<int>> tests = {
@@ -820,6 +849,132 @@ private:
         }
     }
 
+
+    void front() {
+        test_case = "front";
+        consistent_tree<int> tree;
+
+        auto v1 = get_random_vector(2 * 1e3, -1e3);
+        std::set<int> s;
+        for (auto it: v1) {
+            if (s.begin() != s.end()) {
+                REQUIRE(tree.front() == *s.begin(), "case 1");
+            }
+            tree.insert(it);
+            s.insert(it);
+            REQUIRE(tree.front() == *s.begin(), "case 2");
+        }
+
+        tree.clear();
+        for (int i = 1e5; i >= 0; --i) {
+            tree.insert(i);
+            REQUIRE(tree.front() == i, "case 3");
+        }
+    }
+
+    void back() {
+        test_case = "back";
+        consistent_tree<int> tree;
+
+        REQUIRE(tree.begin() == tree.end(), "case 1");
+
+        auto v1 = get_random_vector(1e3);
+        std::set<int> s;
+        for (auto it: v1) {
+            tree.insert(it);
+            s.insert(it);
+
+            REQUIRE(tree.back() == *s.rbegin(), "case 2");
+        }
+
+        tree.clear();
+        for (int i = 0; i < 1e5; ++i) {
+            tree.insert(i);
+            REQUIRE(tree.back() == i, "case 3");
+        }
+    }
+
+    void front_iter() {
+        test_case = "front_iter";
+        consistent_tree<int> tree;
+
+        size_t N = 1e3;
+        for (int i = 0; i < N; ++i) {
+            tree.insert(i);
+        }
+
+        std::vector<typename consistent_tree<int>::iterator> v_it(N);
+        for (int i = 0; i < N; ++i) {
+            v_it[i] = tree.find(i);
+        }
+
+        for (int i = 0; i < N; i++) {
+            REQUIRE(tree.front() == i, "case 1");
+            tree.erase(i);
+            if (i != N - 1) {
+                REQUIRE(tree.front() == i + 1, "case 2");
+            }
+        }
+
+        REQUIRE(tree.empty(), "case 3");
+    }
+
+    void back_iter() {
+        test_case = "back_iter";
+        consistent_tree<int> tree;
+
+        size_t N = 1e3;
+        for (int i = 0; i < N; ++i) {
+            tree.insert(i);
+        }
+
+        std::vector<typename consistent_tree<int>::iterator> v_it(N);
+        for (int i = 0; i < N; ++i) {
+            v_it[i] = tree.find(i);
+        }
+
+        for (int i = (int)N - 1; i >= 0; i--) {
+            REQUIRE(tree.back() == i, "case 1");
+            tree.erase(i);
+            if (i != 0) {
+                REQUIRE(tree.back() == i - 1, "case 2");
+            }
+        }
+
+        REQUIRE(tree.empty(), "case 3");
+    }
+
+    void size_and_empty() {
+        test_case = "size";
+        consistent_tree<int> tree;
+
+        REQUIRE(tree.size() == 0 && tree.empty(), "case 1");
+
+        auto v1 = get_random_vector(1e3);
+        std::set<int> s;
+        for (auto it: v1) {
+            tree.insert(it);
+            s.insert(it);
+
+            REQUIRE(tree.size() == s.size(), "case 2");
+            REQUIRE(!tree.empty(), "case 3");
+        }
+
+        for (int i = (int)v1.size() - 1; i >= 0; i--) {
+            tree.erase(v1[i]);
+            s.erase(v1[i]);
+
+            REQUIRE(tree.size() == s.size(), "case 4");
+
+            tree.erase(v1[i]);
+            REQUIRE(tree.size() == s.size(), "case 5");
+            REQUIRE(tree.empty() == s.empty(), "case 6");
+        }
+
+        REQUIRE(tree.empty(), "case 7");
+    }
+
+
     void begin() {
         test_case = "begin";
         consistent_tree<int> tree;
@@ -908,6 +1063,7 @@ private:
         REQUIRE(tree.end() != tree1.end(), "case 5");
     }
 
+
     void iterator() {
         test_case = "iterator";
         consistent_tree<int> tree;
@@ -928,7 +1084,6 @@ private:
     void iterator_2() {
         test_case = "iterator_2";
         consistent_tree<int> tree;
-        std::set<int> s;
         auto v = get_random_vector(1e3);
         for (int i = 0; i < v.size(); ++i) {
             tree.insert(v[i]);
@@ -990,8 +1145,9 @@ private:
         }
     }
 
-    void iterator_4() {
-        test_case = "iterator_4";
+
+    void inc_iterator() {
+        test_case = "inc_iterator";
         consistent_tree<int> tree;
         tree.insert(1);
         tree.insert(2);
@@ -1014,6 +1170,51 @@ private:
         REQUIRE(++it3 == it4, "case 3");
         REQUIRE(++it4 == tree.end(), "case 4");
     }
+
+    void dec_iterator() {
+        test_case = "dec_iterator";
+
+        consistent_tree<int> tree;
+        auto v = get_random_vector(1e1);
+        for (int i = 0; i < v.size(); ++i) {
+            tree.insert(v[i]);
+        }
+
+        std::vector<typename consistent_tree<int>::iterator> v_it(v.size());
+        int i = 0;
+        for (auto it = tree.begin(); it != tree.end(); ++it) {
+            v_it[i++] = it;
+        }
+
+        auto it = tree.end();
+        for (i = (int)v_it.size() - 1; i >= 0; i--) {
+            REQUIRE(v_it[i] == --it, "case 1");
+        }
+
+
+        tree.clear();
+        tree.insert(1);
+        tree.insert(2);
+        tree.insert(3);
+        tree.insert(4);
+        tree.insert(5);
+
+        auto it1 = tree.find(1);
+        auto it2 = tree.find(2);
+        auto it3 = tree.find(3);
+        auto it4 = tree.find(4);
+        auto it5 = tree.find(5);
+
+        tree.erase(it2);
+        tree.erase(it3);
+        tree.erase(it5);
+
+        REQUIRE(--it2 == it1, "case 2");
+        REQUIRE(--it3 == it1, "case 3");
+        REQUIRE(--it5 == it4, "case 4");
+        REQUIRE(--it4 == it1, "case 5");
+    }
+
 
     void destructor() {
         test_case = "destructor";
@@ -1060,17 +1261,30 @@ public:
         std::cout << "-------tree_test.h-------\n";
 
         to_vector();
+
         insert();
         find();
         erase();
+
+        front();
+        front_iter();
+        back();
+        back_iter();
+
+        size_and_empty();
+
         begin();
         begin_remove();
         end();
         end_remove();
+
         iterator();
         iterator_2();
         iterator_3();
-        iterator_4();
+
+        inc_iterator();
+        dec_iterator();
+
         destructor();
 
         std::cout << test_counter - fail_counter << " TEST PASSED\n";
@@ -1078,7 +1292,6 @@ public:
         std::cout << "-------------------------\n\n";
     }
 };
-
 /** tree_test.h */
 
 int main() {
